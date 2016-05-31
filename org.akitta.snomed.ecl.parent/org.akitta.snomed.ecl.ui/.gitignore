@@ -1,0 +1,15 @@
+.DS_Store
+.DS_Store?
+._*
+.Trashes
+#Icon?
+ehthumbs.db
+Thumbs.db
+*~
+*.class
+.metadata/
+bin/
+.*._trace
+m2repo/
+xtend-gen/
+target/

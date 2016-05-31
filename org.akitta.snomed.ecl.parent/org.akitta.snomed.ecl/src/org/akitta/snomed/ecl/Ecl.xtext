@@ -1,0 +1,192 @@
+grammar org.akitta.snomed.ecl.Ecl with org.eclipse.xtext.common.Terminals
+
+import "org.akitta.snomed.ecl.model.ecl"
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+Script:
+	constraint = ExpressionConstraint?
+;
+
+ExpressionConstraint returns ExpressionConstraint:
+	ExclusionExpressionConstraint 
+;
+
+ExclusionExpressionConstraint returns ExpressionConstraint:
+	DisjunctionExpressionConstraint (=>({ExclusionExpressionConstraint.left=current} op=ExclusionOperator) right=DisjunctionExpressionConstraint)*
+;
+
+DisjunctionExpressionConstraint returns ExpressionConstraint:
+	ConjunctionExpressionConstraint (=>({DisjunctionExpressionConstraint.left=current} op=DisjunctionOperator) right=ConjunctionExpressionConstraint)*
+;
+
+ConjunctionExpressionConstraint returns ExpressionConstraint:
+	RefinedExpressionConstraint (=>({ConjunctionExpressionConstraint.left=current} op=ConjunctionOperator) right=RefinedExpressionConstraint)*
+;
+
+RefinedExpressionConstraint returns ExpressionConstraint:
+	PrimaryExpressionConstraint ({RefinedExpressionConstraint.target=current} ':' refinement=Refinement)?
+;
+
+Refinement:
+	DisjunctionRefinementSet
+;
+
+DisjunctionRefinementSet returns Refinement:
+	ConjunctionRefinementSet (=>({DisjunctionRefinementSet.left=current} op=DisjunctionOperator) right=ConjunctionRefinementSet)*
+;
+
+ConjunctionRefinementSet returns Refinement:
+	SubRefinement (=>({ConjunctionRefinementSet.left=current} op=ConjunctionOperator) right=SubRefinement)*
+;
+
+SubRefinement returns Refinement:
+	  AttributeSetRefinement 
+	| AttributeGroupRefinement 
+	| ParenthesizedRefinement
+;
+
+AttributeSetRefinement:
+	attributeSet=DisjunctionAttributeSet 
+;
+
+AttributeGroupRefinement:
+	attributeGroup=AttributeGroup
+;
+
+DisjunctionAttributeSet returns AttributeSet:
+	ConjunctionAttributeSet (=>({DisjunctionAttributeSet.left=current} op=DisjunctionOperator) right=ConjunctionAttributeSet)*
+;
+
+ConjunctionAttributeSet returns AttributeSet:
+	PrimaryAttributeSet (=>({ConjunctionAttributeSet.left=current} op=ConjunctionOperator) right=PrimaryAttributeSet)*
+;
+
+PrimaryAttributeSet returns AttributeSet:
+	ParenthesizedAttributeSet | Attribute
+;
+
+Attribute:
+	cardinality=Cardinality?
+	reversed?=REVERSE?
+	op=AttributeOperator?
+	(conceptRef=ConceptReference | wildcard?='*')
+	value=AttributeValue
+;
+
+Cardinality:
+	'[' from=INT '..' (to=INT | many?='*') ']'
+;
+
+AttributeValue:
+	ExpressionValue |
+	NumericValue | 
+	StringValue
+;
+
+StringValue:
+	op = StringComparisonOperator value = STRING
+;
+
+NumericValue:
+	op = NumericComparisonOperator '#' value = Number
+;
+
+Number returns ecore::EBigDecimal:
+	INT ('.' INT)?
+;
+
+ExpressionValue:
+	op = ExpressionComparisonOperator value = PrimaryExpressionConstraint
+;
+
+enum ExpressionComparisonOperator returns ComparisonOperator:
+	EQUALS = '=' |
+	NOT_EQUALS = '!='
+;
+
+enum StringComparisonOperator returns ComparisonOperator:
+	EQUALS = '=' |
+	NOT_EQUALS = '!='	
+;
+
+enum NumericComparisonOperator returns ComparisonOperator:
+	EQUALS = '=' |
+	NOT_EQUALS = '!=' |
+	LESS_THAN = '<' |
+	LESS_THAN_EQUALS = '<=' |
+	GREATER_THAN = '>' |
+	GREATER_THAN_EQUALS = '>='
+;
+
+ParenthesizedAttributeSet returns AttributeSet:
+	'(' DisjunctionAttributeSet ')'
+;
+
+AttributeGroup:
+	cardinality=Cardinality? '{' attributeSet=DisjunctionAttributeSet '}' 
+;
+
+ParenthesizedRefinement returns Refinement:
+	'(' Refinement ')'
+;
+
+PrimaryExpressionConstraint returns ExpressionConstraint:
+	SimpleExpressionConstraint | 
+	'(' ExpressionConstraint {ParenthesizedExpressionConstraint.^current=current} ')'
+;
+
+SimpleExpressionConstraint:
+	op=ConstraintOperator? concept=FocusConcept
+;
+
+enum ConstraintOperator:
+	DESCENDANT = '<' |
+	DESCENDANT_OR_SELF = '<<' |
+	ANCESTOR = '>' | 
+	ANCESTOR_OR_SELF = '>>'
+;
+
+enum AttributeOperator:
+	DESCENDANT = '<' |
+	DESCENDANT_OR_SELF = '<<'
+;
+
+FocusConcept:
+	memberOf?='^'? (conceptRef=ConceptReference | wildcard?='*') 
+;
+
+ConceptReference:
+	id=ConceptID ( term=TERM_STRING )?	
+;
+
+enum BinaryOperator:
+	CONJUNCTION = 'AND' |
+	CONJUNCTION = ',' |
+	DISJUNCTION = 'OR' |
+	EXCLUSION = 'MINUS'
+;
+
+enum ConjunctionOperator returns BinaryOperator:
+	CONJUNCTION = 'AND' |
+	CONJUNCTION = ','
+;
+
+enum DisjunctionOperator returns BinaryOperator:
+	DISJUNCTION = 'OR'
+;
+
+enum ExclusionOperator returns BinaryOperator:
+	EXCLUSION = 'MINUS'
+;
+
+ConceptID:
+	INT
+;
+
+terminal TERM_STRING:
+	"|" ( !("|") )* "|"
+;
+
+terminal REVERSE:
+	'R'
+;

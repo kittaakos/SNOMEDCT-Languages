@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: org.akitta.snomed.ecl
+Bundle-Vendor: My Company
+Bundle-Version: 1.0.0.qualifier
+Bundle-SymbolicName: org.akitta.snomed.ecl; singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.akitta.snomed.ecl.model,
+ org.eclipse.xtext,
+ org.eclipse.xtext.xbase,
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.xtext.xbase.lib,
+ org.antlr.runtime,
+ org.eclipse.xtext.util,
+ org.eclipse.xtend.lib
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: org.akitta.snomed.ecl.services,
+ org.akitta.snomed.ecl.serializer,
+ org.akitta.snomed.ecl.parser.antlr.lexer,
+ org.akitta.snomed.ecl,
+ org.akitta.snomed.ecl.scoping,
+ org.akitta.snomed.ecl.parser.antlr,
+ org.akitta.snomed.ecl.validation,
+ org.akitta.snomed.ecl.generator,
+ org.akitta.snomed.ecl.formatting,
+ org.akitta.snomed.ecl.parser.antlr.internal
+Import-Package: org.apache.log4j

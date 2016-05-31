@@ -1,0 +1,4 @@
+include 'org.akitta.snomed.ecl'
+include 'org.akitta.snomed.ecl.ide'
+include 'org.akitta.snomed.ecl.web'
+include 'org.akitta.snomed.ecl.tests'

@@ -1,0 +1,478 @@
+/*
+ * Meta-model for the SNOMED&nbsp;CT Expression Constraint Language.
+ * This meta model contains high level, abstract AST elements that help traversing and
+ * processing the AST. Also provides basic operations and properties to avoid boilerplate code.
+ * 
+ * @author akitta
+ */
+package org.akitta.snomed.ecl.model.ecl
+
+/**
+ * Representation of a script. Contains zero or exactly one {@link ExpressionConstraint expression constraint}.
+ */
+class Script {
+	
+	/**
+	 * The root expression constraint of the script.
+	 */
+	contains ExpressionConstraint constraint
+}
+
+/**
+ * Logical representation of a basic AST element. <br>
+ * Used as a marker interface to restrict types in {@link CompoundElement compound element}s.
+ */
+abstract class AstElement {
+	// intentionally empty
+}
+
+/**
+ * Representation of a expression constraint.
+ */
+abstract class ExpressionConstraint extends AstElement {
+	// intentionally empty
+}
+
+/**
+ * Represents a parenthesized expression constraint. <br>
+ * This type is used to group expression constraints and clearly disambiguate the order 
+ * in which the binary operators are applied.
+ */
+class ParenthesizedExpressionConstraint extends ExpressionConstraint {
+	
+	/**
+	 * The wrapped expression constraint element that is grouped by the parenthesis. 
+	 */
+	contains ExpressionConstraint current
+}
+
+
+/**
+ * Logical representation of a compound element. Compound elements consists of
+ * two arbitrary {@link AstElement AST element}s.
+ */
+abstract class CompoundElement<T extends AstElement> extends AstElement {
+
+	/**
+	 * The binary operator between the compound elements.
+	 */
+	BinaryOperator ^op
+	
+	/**
+	 * The left AST element.
+	 */
+	contains T left
+	
+	/**
+	 * The right hand side element.
+	 */
+	contains T right
+}
+
+/**
+ * Compound element of {@link ExpressionConstraint expression constraint}s. 
+ */
+abstract class CompoundExpressionConstraint extends CompoundElement<ExpressionConstraint>, ExpressionConstraint {
+	// intentionally empty
+}
+
+/**
+ * Represents two expression constraints combined with the logical conjunction ({@code AND}) binary operator.  
+ */
+class ConjunctionExpressionConstraint extends CompoundExpressionConstraint {
+	// intentionally empty
+}
+
+/**
+ * Represents two expression constraints combined with the logical disjunction ({@code OR}) binary operator.  
+ */
+class DisjunctionExpressionConstraint extends CompoundExpressionConstraint {
+	// intentionally empty
+}
+
+/**
+ * Representation of two expression constraints with a binary exclusion ({@code MINUS}) operator.  
+ */
+class ExclusionExpressionConstraint extends CompoundExpressionConstraint {
+	// intentionally empty
+}
+
+/**
+ * Represents a refined expression constraint. Consists of a simple expression constraint, 
+ * followed by a {@link Refinement refinement}.
+ */
+class RefinedExpressionConstraint extends ExpressionConstraint {
+	
+	/**
+	 * The expression constraint.
+	 */
+	contains ExpressionConstraint target
+	
+	/**
+	 * The refinement following the expression constraint.
+	 */
+	contains Refinement refinement
+}
+
+/**
+ * A simple expression constraint wrapping exactly one focus concept, preceded by a 
+ * constraint  operator. The constraint operator could be referencing to self, in such 
+ * cases the operator itself is missing from the grammar.
+ */
+class SimpleExpressionConstraint extends ExpressionConstraint {
+	
+	/**
+	 * The constraint operator.
+	 */
+	ConstraintOperator ^op
+	
+	/**
+	 * The focus concept of the simple expression constraint.
+	 */
+	contains FocusConcept concept
+}
+
+/**
+ * A refinement contains all the grouped and non-grouped attributes that refine the set of clinical 
+ * meaning satisfied by the expression constraint. 
+ */
+abstract class Refinement extends AstElement {
+	// intentionally empty
+}
+
+/**
+ * Representation of a compound refinement. Wraps exactly two refinements.
+ */
+abstract class CompoundRefinement extends CompoundElement<Refinement>, Refinement {
+	// intentionally empty
+}
+
+/**
+ * Wraps tow refinement sets with a conjunction binary operator.
+ */
+class ConjunctionRefinementSet extends CompoundRefinement {
+	// intentionally empty
+}
+
+/**
+ * Type for wrapping exactly refinement sets with a disjunction operator.
+ */
+class DisjunctionRefinementSet extends CompoundRefinement {
+	// intentionally empty
+}
+
+/**
+ * Refinement wrapping and attribute group.
+ */
+class AttributeGroupRefinement extends Refinement {
+	
+	/**
+	 * The wrapped attribute group.
+	 */
+	contains AttributeGroup attributeGroup
+}
+
+/**
+ * Refinement wrapping an attribute set.
+ */
+class AttributeSetRefinement extends Refinement {
+	
+	/**
+	 * The wrapped attribute set.
+	 */
+	contains AttributeSet attributeSet
+}
+
+/**
+ * Base representation of an attribute set.
+ */
+abstract class AttributeSet extends AstElement {
+	// intentionally empty
+}
+
+/**
+ * Representation of exactly two attribute sets.
+ */
+abstract class CompoundAttributeSet extends CompoundElement<AttributeSet>, AttributeSet {
+	// intentionally empty
+}
+
+/**
+ * Representation of a logical conjunction of two attribute sets.
+ */
+class ConjunctionAttributeSet extends CompoundAttributeSet {
+	// intentionally empty
+}
+
+/**
+ * Representation of a logical disjunction of two attribute sets.
+ */
+class DisjunctionAttributeSet extends CompoundAttributeSet {
+	// intentionally empty
+}
+
+/**
+ * An attribute is a name-value pair expressing a single refinement of the containing expression constraint.
+ */
+class Attribute extends AttributeSet {
+	
+	/**
+	 * {@code true} if the attribute should be reversed.
+	 */
+	boolean reversed
+	
+	/**
+	 * {@code true} if wild-card, otherwise {@code false}. 
+	 */
+	boolean wildcard
+	
+	/** 
+	 * The attribute operator.
+	 */
+	AttributeOperator ^op
+
+	/**
+	 * The cardinality.
+	 */
+	contains Cardinality cardinality
+	
+	/**
+	 * The reference to the SNOMED&nbsp;CT concept.
+	 */
+	contains ConceptReference conceptRef
+	
+	/**
+	 * The value of the attribute.
+	 */
+	contains AttributeValue value
+}
+
+/**
+ * Base representation of the attribute value.
+ */
+abstract class AttributeValue {
+	
+	/**
+	 * The comparison operator.
+	 */
+	ComparisonOperator ^op
+}
+
+/**
+ * Type representing an expression attribute value.
+ */
+class ExpressionValue extends AttributeValue {
+	
+	/**
+	 * The wrapped expression constraint.
+	 */
+	contains ExpressionConstraint value
+}
+
+/**
+ * Representation of a numeric value. Could be decimal or integer.
+ */
+class NumericValue extends AttributeValue {
+	
+	/**
+	 * The wrapped numeric value. Could be integer or decimal.
+	 */
+	BigDecimal value
+}
+
+/**
+ * The string attribute value.
+ */
+class StringValue extends AttributeValue {
+	
+	/**
+	 * The wrapped actual value.
+	 */
+	String value	
+}
+
+/**
+ * Representation of a concept reference.
+ */
+class ConceptReference {
+	
+	/**
+	 * The unique SNOEMD&nbsp;CT ID of the concept.
+	 */
+	String ^id
+
+	/**
+	 * The term of the concept which is wrapped between a leading and trailing pipe (&#x7c;) characters. <br>
+	 * Also could contain leading and trailing whitespaces.
+	 */
+	String term
+}
+
+/**
+ * Representation of a focus concept. Could be wild-card (any) concept, or
+ * can point to a reference set.
+ */
+class FocusConcept {
+	
+	/**
+	 * {@code true} if points to a reference set.
+	 */
+	boolean memberOf
+	
+	/**
+	 * {@code true} if means any active concepts.
+	 */
+	boolean wildcard
+	
+	/**
+	 * The concept reference. Could be absent, if {@code wildcard} is {@code true}.
+	 */
+	contains ConceptReference conceptRef
+}
+
+/**
+ * Represents an attribute group by wrapping an attribute set and an optional cardinality.
+ */
+class AttributeGroup {
+	
+	/**
+	 * The wrapped attribute set.
+	 */
+	contains AttributeSet attributeSet
+	
+	/**
+	 * The optional cardinality. 
+	 */
+	contains Cardinality cardinality
+}
+
+/**
+ * Simple type for representing a cardinality.
+ */
+class Cardinality {
+	
+	/**
+	 * The form non-negative integer.
+	 */
+	int from
+	
+	/**
+	 * The to non-negative integer. Could be {@code 0} if {@code many} is {@code true}.
+	 * <TODO consider registering value converter instead and do the -1 conversion there in case of many true.>
+	 */
+	int to
+	
+	/**
+	 * {@code true} if un-bounded cardinality.
+	 */
+	boolean many
+}
+
+/**
+ * Enumeration of binary operators.
+ */
+enum BinaryOperator {
+	
+	/**
+	 * Exclusion.
+	 */
+	EXCLUSION
+	
+	/**
+	 * Logical AND.
+	 */
+	CONJUNCTION
+	
+	/**
+	 * Logical OR.
+	 */
+	DISJUNCTION
+}
+
+/**
+ * Enumerations of attribute operators.
+ */
+enum AttributeOperator {
+	
+	/**
+	 * Self, if this is used, then it is not represented in the constraint. This is used by default.
+	 */
+	SELF
+	
+	/**
+	 * All descendants of a concept.
+	 */
+	DESCENDANT
+	
+	/**
+	 * The concept and its all descendants. 
+	 */
+	DESCENDANT_OR_SELF	
+}
+
+/**
+ * Enumeration of constraiont operators.
+ */
+enum ConstraintOperator {
+	
+	/**
+	 * Self, if this is used, then it is not represented in the constraint. This is used by default.
+	 */
+	SELF
+	
+	/**
+	 * All descendants of a concept.
+	 */
+	DESCENDANT
+	
+	/**
+	 * The concept itself and all its descendants. 
+	 */
+	DESCENDANT_OR_SELF
+	
+	/**
+	 * All ancestors of a concept.
+	 */
+	ANCESTOR
+	
+	/**
+	 * The concept itself and its all ancestors.
+	 */
+	ANCESTOR_OR_SELF
+}
+
+/**
+ * Enumerator of operators used for attribute value comparison.
+ */
+enum ComparisonOperator {
+	
+	/**
+	 * Equals.
+	 */
+ 	EQUALS
+ 	
+ 	/**
+ 	 * NOT equals.
+ 	 */
+  	NOT_EQUALS
+  	
+  	/**
+  	 * Less than.
+  	 */
+  	LESS_THAN
+  	
+  	/**
+  	 * Less than or equals.
+  	 */
+  	LESS_THAN_EQUALS
+  	
+  	/**
+  	 * Greater than.
+  	 */
+  	GREATER_THAN
+  	
+  	/**
+  	 * Greater than or equals.
+  	 */
+  	GREATER_THAN_EQUALS
+}
