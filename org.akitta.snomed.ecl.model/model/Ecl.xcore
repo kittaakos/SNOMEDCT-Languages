@@ -2,8 +2,6 @@
  * Meta-model for the SNOMED&nbsp;CT Expression Constraint Language.
  * This meta model contains high level, abstract AST elements that help traversing and
  * processing the AST. Also provides basic operations and properties to avoid boilerplate code.
- * 
- * @author akitta
  */
 package org.akitta.snomed.ecl.model.ecl
 
@@ -411,7 +409,7 @@ enum AttributeOperator {
 }
 
 /**
- * Enumeration of constraiont operators.
+ * Enumeration of constraint operators.
  */
 enum ConstraintOperator {
 	

@@ -15,7 +15,7 @@ import org.eclipse.emf.common.util.Enumerator;
  * <!-- end-user-doc -->
  * <!-- begin-model-doc -->
  * *
- * Enumeration of constraiont operators.
+ * Enumeration of constraint operators.
  * <!-- end-model-doc -->
  * @see org.akitta.snomed.ecl.model.ecl.EclPackage#getConstraintOperator()
  * @model

@@ -24,8 +24,6 @@ import org.eclipse.emf.ecore.EReference;
  * Meta-model for the SNOMED&nbsp;CT Expression Constraint Language.
  * This meta model contains high level, abstract AST elements that help traversing and
  * processing the AST. Also provides basic operations and properties to avoid boilerplate code.
- * 
- * @author akitta
  * <!-- end-model-doc -->
  * @see org.akitta.snomed.ecl.model.ecl.EclFactory
  * @model kind="package"
